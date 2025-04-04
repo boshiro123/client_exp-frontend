@@ -65,6 +65,22 @@
   color: #dc3545;
   font-size: 14px;
   margin-top: 5px;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f8d7da;
+  border-radius: 4px;
+  border: 1px solid #f5c6cb;
+}
+
+.success-message {
+  color: #28a745;
+  font-size: 14px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #d4edda;
+  border-radius: 4px;
+  border: 1px solid #c3e6cb;
 }
 
 .submit-button {
@@ -116,4 +132,10 @@
 .form-select:focus {
   border-color: #007bff;
   outline: none;
+}
+
+.form-text {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 5px;
 }
