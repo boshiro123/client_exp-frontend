@@ -6,8 +6,9 @@ import {
   Navigate,
 } from "react-router-dom"
 import "./App.css"
-import LoginPage from "./pages/Login"
-import RegisterPage from "./pages/Register"
+import LoginPage from "./pages/Login/LoginPage"
+import RegisterPage from "./pages/Register/RegisterPage"
+import DashboardPage from "./pages/Dashboard/DashboardPage"
 import ProtectedRoute from "./components/common/ProtectedRoute"
 
 function App() {
@@ -24,7 +25,7 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <div>Главная страница (Dashboard)</div>
+                <DashboardPage />
               </ProtectedRoute>
             }
           />
