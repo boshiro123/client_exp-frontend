@@ -1,22 +1,26 @@
-import React from "react"
-import { Navigate } from "react-router-dom"
+import { Navigate, Outlet, useLocation } from "react-router-dom"
 import { authService } from "../../api/auth"
 
-const ProtectedRoute = ({ children, adminOnly = false }) => {
+/**
+ * Компонент для защищенных маршрутов, требующих аутентификации
+ * Если пользователь не авторизован, перенаправляет на страницу входа
+ */
+const ProtectedRoute = () => {
+  const location = useLocation()
   const isAuthenticated = authService.isAuthenticated()
-  const currentUser = authService.getCurrentUser()
 
+  // Если пользователь не авторизован, перенаправляем на страницу входа
+  // с сохранением URL, на который он пытался попасть
   if (!isAuthenticated) {
-    // Пользователь не авторизован, перенаправляем на страницу входа
-    return <Navigate to="/login" replace />
+    // Сохраняем путь, чтобы перенаправить пользователя после входа
+    localStorage.setItem("redirectAfterLogin", location.pathname)
+
+    // Перенаправляем на страницу входа
+    return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  if (adminOnly && currentUser?.role !== "admin") {
-    // Если маршрут только для администраторов, а текущий пользователь не админ
-    return <Navigate to="/dashboard" replace />
-  }
-
-  return children
+  // Если пользователь авторизован, отображаем защищенный маршрут
+  return <Outlet />
 }
 
 export default ProtectedRoute

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { authService } from "../../api/auth"
+import { surveyService } from "../../api/survey"
 import "../../components/common/AuthStyles.css"
 import "./DashboardStyles.css"
 
@@ -11,7 +12,7 @@ const DashboardPage = () => {
   const [surveyData, setSurveyData] = useState({
     title: "",
     description: "",
-    status: "черновик",
+    status: "DRAFT",
     startDate: "",
     endDate: "",
     questions: [
@@ -67,15 +68,57 @@ const DashboardPage = () => {
     "Сегментация по мотивации и ценности клиента",
   ])
   const [newCategory, setNewCategory] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
+  const [surveys, setSurveys] = useState([])
+  const [surveysFetching, setSurveysFetching] = useState(false)
+  const [surveysError, setSurveysError] = useState("")
 
   useEffect(() => {
     const currentUser = authService.getCurrentUser()
     if (currentUser) {
       setUser(currentUser)
+      fetchSurveys()
     } else {
       navigate("/login")
     }
   }, [navigate])
+
+  const fetchSurveys = async () => {
+    setSurveysFetching(true)
+    setSurveysError("")
+    try {
+      const response = await surveyService.getAllSurveys()
+      console.log("Получены данные:", response)
+
+      // Проверяем, есть ли поле content в ответе
+      if (response && response.content && Array.isArray(response.content)) {
+        console.log(
+          `Получено ${response.content.length} опросников из поля content`
+        )
+        setSurveys(response.content)
+      } else if (Array.isArray(response)) {
+        // На случай, если API вернет просто массив
+        console.log(`Получено ${response.length} опросников напрямую`)
+        setSurveys(response)
+      } else {
+        console.log(
+          "Ответ не содержит опросников в ожидаемом формате:",
+          response
+        )
+        setSurveys([])
+      }
+    } catch (error) {
+      console.error("Ошибка при получении опросников:", error)
+      setSurveysError(
+        "Не удалось загрузить опросники. Пожалуйста, попробуйте позже."
+      )
+      setSurveys([])
+    } finally {
+      setSurveysFetching(false)
+    }
+  }
 
   const handleLogout = () => {
     authService.logout()
@@ -83,6 +126,56 @@ const DashboardPage = () => {
   }
 
   const handleCreateSurvey = () => {
+    // Сбрасываем форму на значения по умолчанию
+    setSurveyData({
+      title: "",
+      description: "",
+      status: "DRAFT",
+      startDate: "",
+      endDate: "",
+      questions: [
+        {
+          text: "Укажите ваш возраст",
+          type: "single_choice",
+          required: true,
+          category: "Демографическая информация",
+          options: [
+            "До 18 лет",
+            "18–25 лет",
+            "26–35 лет",
+            "36–45 лет",
+            "46–60 лет",
+            "60+ лет",
+          ],
+        },
+        {
+          text: "Ваш пол",
+          type: "single_choice",
+          required: true,
+          category: "Демографическая информация",
+          options: ["Мужской", "Женский"],
+        },
+        {
+          text: "Ваша профессия или сфера деятельности",
+          type: "single_choice",
+          required: false,
+          category: "Демографическая информация",
+          options: [
+            "Студент",
+            "Фрилансер",
+            "Офисный работник",
+            "Руководитель/владелец бизнеса",
+            "Другое",
+          ],
+        },
+      ],
+    })
+
+    // Очищаем сообщения об ошибках и успехе
+    setErrorMessage("")
+    setSuccessMessage("")
+
+    // Показываем форму создания
     setShowSurveyForm(true)
   }
 
@@ -218,12 +311,105 @@ const DashboardPage = () => {
     setNewCategory("")
   }
 
-  const saveSurvey = () => {
-    // Здесь будет логика сохранения опросника на сервер
-    // Для демонстрации просто выведем данные в консоль
-    console.log("Сохранение опросника:", surveyData)
-    alert("Опросник успешно сохранен!")
-    setShowSurveyForm(false)
+  const saveSurvey = async () => {
+    // Валидация данных опросника перед отправкой
+    if (!surveyData.title.trim()) {
+      setErrorMessage("Необходимо указать название опросника")
+      return
+    }
+
+    if (surveyData.questions.length < 3) {
+      setErrorMessage("Опросник должен содержать минимум 3 вопроса")
+      return
+    }
+
+    // Сброс сообщений об ошибках/успехе
+    setErrorMessage("")
+    setSuccessMessage("")
+    setIsLoading(true)
+
+    try {
+      // Преобразуем данные в формат, ожидаемый сервером
+      const serverData = {
+        ...surveyData,
+        // Преобразуем статус к верхнему регистру, если он в верблюжьем регистре
+        status:
+          surveyData.status === "черновик"
+            ? "DRAFT"
+            : surveyData.status === "активный"
+            ? "ACTIVE"
+            : surveyData.status === "завершенный"
+            ? "COMPLETED"
+            : surveyData.status,
+        // Добавляем порядковые номера вопросам
+        questions: surveyData.questions.map((question, index) => ({
+          ...question,
+          orderNumber: index + 1,
+          // Преобразуем тип вопроса к формату сервера
+          type:
+            question.type === "single_choice"
+              ? "SINGLE_CHOICE"
+              : question.type === "multiple_choice"
+              ? "MULTIPLE_CHOICE"
+              : question.type === "text"
+              ? "TEXT"
+              : question.type === "rating"
+              ? "RATING"
+              : question.type.toUpperCase(),
+        })),
+      }
+
+      console.log("Отправка данных на сервер:", serverData)
+
+      let response
+      let successMsg
+
+      // Если у опросника есть id, то это обновление, иначе - создание
+      if (surveyData.id) {
+        // Обновление существующего опросника
+        response = await surveyService.updateSurvey(surveyData.id, serverData)
+        successMsg = "Опросник успешно обновлен!"
+      } else {
+        // Создание нового опросника
+        response = await surveyService.createSurvey(serverData)
+        successMsg = "Опросник успешно создан!"
+      }
+
+      console.log("Опросник успешно сохранен:", response)
+      setSuccessMessage(successMsg)
+
+      // Обновляем список опросников
+      fetchSurveys()
+
+      // Сброс формы и возврат к главному экрану через 2 секунды
+      setTimeout(() => {
+        setShowSurveyForm(false)
+        setSuccessMessage("")
+      }, 2000)
+    } catch (error) {
+      console.error("Ошибка при сохранении опросника:", error)
+
+      let errorMsg =
+        "Произошла ошибка при сохранении опросника. Пожалуйста, попробуйте позже."
+
+      // Обработка различных типов ошибок
+      if (error.response) {
+        // Ошибка от сервера с кодом статуса
+        errorMsg =
+          error.response.data?.message ||
+          `Ошибка сервера: ${error.response.status} - ${error.response.statusText}`
+      } else if (error.request) {
+        // Ошибка сети - запрос был отправлен, но ответ не получен
+        errorMsg = "Сервер не отвечает. Проверьте подключение к Интернету."
+      } else {
+        // Ошибка при настройке запроса
+        errorMsg = `Ошибка при создании запроса: ${error.message}`
+      }
+
+      setErrorMessage(errorMsg)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const cancelSurveyCreation = () => {
@@ -234,6 +420,171 @@ const DashboardPage = () => {
     ) {
       setShowSurveyForm(false)
     }
+  }
+
+  const handleEditSurvey = async id => {
+    try {
+      setIsLoading(true)
+      // Получаем детальную информацию об опроснике с сервера
+      const surveyDetails = await surveyService.getSurveyById(id)
+      console.log(
+        "Получены данные опросника для редактирования:",
+        surveyDetails
+      )
+
+      // Преобразуем вопросы из формата сервера в формат интерфейса
+      const transformedQuestions = surveyDetails.questions.map(question => ({
+        ...question,
+        // Преобразуем тип вопроса из формата сервера в формат интерфейса
+        type:
+          question.type === "SINGLE_CHOICE"
+            ? "single_choice"
+            : question.type === "MULTIPLE_CHOICE"
+            ? "multiple_choice"
+            : question.type === "TEXT"
+            ? "text"
+            : question.type === "RATING"
+            ? "rating"
+            : question.type.toLowerCase(),
+      }))
+
+      // Устанавливаем данные опросника в состояние формы
+      setSurveyData({
+        ...surveyDetails,
+        questions: transformedQuestions,
+      })
+
+      // Показываем форму для редактирования
+      setShowSurveyForm(true)
+      setIsLoading(false)
+    } catch (error) {
+      console.error("Ошибка при получении данных опросника:", error)
+      alert(
+        "Не удалось загрузить опросник для редактирования. Пожалуйста, попробуйте позже."
+      )
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteSurvey = async id => {
+    if (window.confirm("Вы уверены, что хотите удалить этот опросник?")) {
+      try {
+        setIsLoading(true)
+
+        await surveyService.deleteSurvey(id)
+
+        // Показываем временное уведомление об успехе
+        setSuccessMessage("Опросник успешно удален")
+        setTimeout(() => setSuccessMessage(""), 3000)
+
+        // Обновить список опросников после удаления
+        fetchSurveys()
+        setIsLoading(false)
+      } catch (error) {
+        console.error("Ошибка при удалении опросника:", error)
+
+        let errorMsg =
+          "Не удалось удалить опросник. Пожалуйста, попробуйте позже."
+
+        // Обработка различных типов ошибок
+        if (error.response) {
+          errorMsg =
+            error.response.data?.message ||
+            `Ошибка сервера: ${error.response.status} - ${error.response.statusText}`
+        }
+
+        setErrorMessage(errorMsg)
+        setTimeout(() => setErrorMessage(""), 3000)
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const handleChangeSurveyStatus = async (id, newStatus) => {
+    try {
+      setIsLoading(true)
+
+      // Преобразуем статус в формат сервера
+      const serverStatus =
+        newStatus === "активный"
+          ? "ACTIVE"
+          : newStatus === "завершенный"
+          ? "COMPLETED"
+          : newStatus === "черновик"
+          ? "DRAFT"
+          : newStatus
+
+      // Получаем русское название статуса для уведомления
+      const statusDisplayName =
+        serverStatus === "ACTIVE"
+          ? "активный"
+          : serverStatus === "COMPLETED"
+          ? "завершенный"
+          : serverStatus === "DRAFT"
+          ? "черновик"
+          : serverStatus
+
+      await surveyService.changeSurveyStatus(id, serverStatus)
+
+      // Показываем временное уведомление об успехе
+      setSuccessMessage(`Статус опросника изменен на "${statusDisplayName}"`)
+      setTimeout(() => setSuccessMessage(""), 3000)
+
+      // Обновить список опросников после изменения статуса
+      fetchSurveys()
+      setIsLoading(false)
+    } catch (error) {
+      console.error("Ошибка при изменении статуса опросника:", error)
+
+      let errorMsg =
+        "Не удалось изменить статус опросника. Пожалуйста, попробуйте позже."
+
+      // Обработка различных типов ошибок
+      if (error.response) {
+        errorMsg =
+          error.response.data?.message ||
+          `Ошибка сервера: ${error.response.status} - ${error.response.statusText}`
+      }
+
+      setErrorMessage(errorMsg)
+      setTimeout(() => setErrorMessage(""), 3000)
+      setIsLoading(false)
+    }
+  }
+
+  const getStatusColor = status => {
+    switch (status) {
+      case "черновик":
+      case "DRAFT":
+        return "#6c757d" // серый
+      case "активный":
+      case "ACTIVE":
+        return "#28a745" // зеленый
+      case "завершенный":
+      case "COMPLETED":
+        return "#dc3545" // красный
+      default:
+        return "#6c757d"
+    }
+  }
+
+  const getStatusDisplayText = status => {
+    switch (status) {
+      case "DRAFT":
+        return "Черновик"
+      case "ACTIVE":
+        return "Активный"
+      case "COMPLETED":
+        return "Завершенный"
+      default:
+        return status
+    }
+  }
+
+  const formatDate = dateString => {
+    if (!dateString) return "—"
+    const date = new Date(dateString)
+    return date.toLocaleDateString("ru-RU")
   }
 
   if (!user) {
@@ -261,15 +612,140 @@ const DashboardPage = () => {
               опросников.
             </p>
 
+            {errorMessage && (
+              <div className="error-message">{errorMessage}</div>
+            )}
+            {successMessage && (
+              <div className="success-message">{successMessage}</div>
+            )}
+
             <div className="action-buttons">
               <button className="primary-button" onClick={handleCreateSurvey}>
                 Создать новый опросник
               </button>
             </div>
+
+            <div className="surveys-list-section">
+              <h3>Мои опросники</h3>
+
+              {surveysFetching && (
+                <div className="loading-indicator">Загрузка опросников...</div>
+              )}
+              {surveysError && (
+                <div className="error-message">{surveysError}</div>
+              )}
+
+              {!surveysFetching && !surveysError && surveys.length === 0 && (
+                <div className="empty-state">
+                  <p>У вас пока нет созданных опросников.</p>
+                </div>
+              )}
+
+              {!surveysFetching && !surveysError && surveys.length > 0 && (
+                <div className="surveys-table-container">
+                  <table className="surveys-table">
+                    <thead>
+                      <tr>
+                        <th>Название</th>
+                        <th>Статус</th>
+                        <th>Дата начала</th>
+                        <th>Дата окончания</th>
+                        <th>Действия</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {surveys.map(survey => (
+                        <tr key={survey.id}>
+                          <td>{survey.title}</td>
+                          <td>
+                            <span
+                              className="status-badge"
+                              style={{
+                                backgroundColor: getStatusColor(survey.status),
+                              }}
+                            >
+                              {getStatusDisplayText(survey.status)}
+                            </span>
+                          </td>
+                          <td>{formatDate(survey.startDate)}</td>
+                          <td>{formatDate(survey.endDate)}</td>
+                          <td>
+                            <div className="survey-actions">
+                              <button
+                                className="action-button edit-button"
+                                onClick={() => handleEditSurvey(survey.id)}
+                                title="Редактировать"
+                              >
+                                ✏️
+                              </button>
+
+                              <button
+                                className="action-button preview-button"
+                                onClick={() => navigate(`/survey/${survey.id}`)}
+                                title="Предпросмотр"
+                              >
+                                👁️
+                              </button>
+
+                              {survey.status !== "активный" &&
+                                survey.status !== "ACTIVE" && (
+                                  <button
+                                    className="action-button activate-button"
+                                    onClick={() =>
+                                      handleChangeSurveyStatus(
+                                        survey.id,
+                                        "активный"
+                                      )
+                                    }
+                                    title="Активировать"
+                                  >
+                                    ▶️
+                                  </button>
+                                )}
+
+                              {(survey.status === "активный" ||
+                                survey.status === "ACTIVE") && (
+                                <button
+                                  className="action-button complete-button"
+                                  onClick={() =>
+                                    handleChangeSurveyStatus(
+                                      survey.id,
+                                      "завершенный"
+                                    )
+                                  }
+                                  title="Завершить"
+                                >
+                                  ⏹️
+                                </button>
+                              )}
+
+                              <button
+                                className="action-button delete-button"
+                                onClick={() => handleDeleteSurvey(survey.id)}
+                                title="Удалить"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="survey-form">
             <h2>Создание нового опросника</h2>
+
+            {errorMessage && (
+              <div className="error-message">{errorMessage}</div>
+            )}
+            {successMessage && (
+              <div className="success-message">{successMessage}</div>
+            )}
 
             <div className="form-section">
               <h3>Основная информация</h3>
@@ -335,9 +811,9 @@ const DashboardPage = () => {
                   value={surveyData.status}
                   onChange={handleSurveyChange}
                 >
-                  <option value="черновик">Черновик</option>
-                  <option value="активный">Активный</option>
-                  <option value="завершенный">Завершенный</option>
+                  <option value="DRAFT">Черновик</option>
+                  <option value="ACTIVE">Активный</option>
+                  <option value="COMPLETED">Завершенный</option>
                 </select>
               </div>
             </div>
@@ -622,13 +1098,15 @@ const DashboardPage = () => {
                 type="button"
                 className="primary-button"
                 onClick={saveSurvey}
+                disabled={isLoading}
               >
-                Сохранить опросник
+                {isLoading ? "Сохранение..." : "Сохранить опросник"}
               </button>
               <button
                 type="button"
                 className="secondary-button"
                 onClick={cancelSurveyCreation}
+                disabled={isLoading}
               >
                 Отменить
               </button>
