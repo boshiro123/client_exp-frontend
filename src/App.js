@@ -11,6 +11,7 @@ import RegisterPage from "./pages/Register/RegisterPage"
 import DashboardPage from "./pages/Dashboard/DashboardPage"
 import SurveyPage from "./pages/Survey/SurveyPage"
 import SurveysListPage from "./pages/Survey/SurveysListPage"
+import StatisticsPage from "./pages/Dashboard/StatisticsPage"
 import ProtectedRoute from "./components/common/ProtectedRoute"
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
           {/* Защищенные маршруты с использованием Outlet */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/statistics" element={<StatisticsPage />} />
           </Route>
 
           {/* Маршруты только для администраторов */}
@@ -35,7 +37,7 @@ function App() {
           </Route>
 
           {/* Перенаправление на страницу входа по умолчанию */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/surveys" replace />} />
         </Routes>
       </div>
     </Router>

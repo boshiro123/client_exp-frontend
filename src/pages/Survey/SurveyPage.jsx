@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { useParams, useNavigate, useLocation } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { surveyService } from "../../api/survey"
 import { authService } from "../../api/auth"
 import "./SurveyStyles.css"
@@ -7,7 +7,7 @@ import "./SurveyStyles.css"
 const SurveyPage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const location = useLocation()
+  // const location = useLocation()
   const [isPreview, setIsPreview] = useState(false)
 
   const [survey, setSurvey] = useState(null)
@@ -18,9 +18,11 @@ const SurveyPage = () => {
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [respondentData, setRespondentData] = useState({
+    name: "",
     email: "",
     consent: false,
   })
+  const [userInfoSubmitted, setUserInfoSubmitted] = useState(false)
 
   useEffect(() => {
     // Проверяем, является ли это предпросмотром от администратора
@@ -44,6 +46,7 @@ const SurveyPage = () => {
       // Если это предпросмотр администратора, используем метод с авторизацией
       if (isAdmin) {
         surveyData = await surveyService.getSurveyById(id)
+        setUserInfoSubmitted(true) // Для админа пропускаем первый этап
       } else {
         surveyData = await surveyService.getPublicSurveyById(id)
       }
@@ -131,6 +134,29 @@ const SurveyPage = () => {
     })
   }
 
+  const handleUserInfoSubmit = e => {
+    e.preventDefault()
+
+    // Простая валидация данных
+    if (!respondentData.name.trim()) {
+      alert("Пожалуйста, укажите ваше имя")
+      return
+    }
+
+    if (!respondentData.email.trim()) {
+      alert("Пожалуйста, укажите ваш email")
+      return
+    }
+
+    if (!respondentData.consent) {
+      alert("Для прохождения опроса необходимо согласие на обработку данных")
+      return
+    }
+
+    // Если все данные заполнены, начинаем опрос
+    setUserInfoSubmitted(true)
+  }
+
   const nextQuestion = () => {
     const currentQuestion = survey.questions[currentQuestionIndex]
 
@@ -180,12 +206,6 @@ const SurveyPage = () => {
       return false
     }
 
-    // Проверяем согласие на обработку данных
-    if (!respondentData.consent) {
-      alert("Для завершения опроса необходимо согласие на обработку данных.")
-      return false
-    }
-
     return true
   }
 
@@ -198,7 +218,8 @@ const SurveyPage = () => {
       const surveyResponse = {
         surveyId: survey.id,
         respondent: {
-          email: respondentData.email || "anonymous",
+          name: respondentData.name,
+          email: respondentData.email,
           consent: respondentData.consent,
         },
         answers: Object.entries(answers).map(([questionId, value]) => ({
@@ -299,6 +320,70 @@ const SurveyPage = () => {
     }
   }
 
+  const renderUserInfoForm = () => {
+    return (
+      <div className="user-info-form">
+        <h2>Прежде чем начать опрос</h2>
+        <p className="form-note">
+          Пожалуйста, представьтесь, чтобы мы могли учесть ваше мнение
+        </p>
+
+        <form onSubmit={handleUserInfoSubmit}>
+          <div className="form-group">
+            <label htmlFor="name">
+              Ваше имя: <span className="required-mark">*</span>
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={respondentData.name}
+              onChange={handleRespondentDataChange}
+              placeholder="Иванов Иван"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">
+              Email: <span className="required-mark">*</span>
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={respondentData.email}
+              onChange={handleRespondentDataChange}
+              placeholder="example@mail.ru"
+              required
+            />
+          </div>
+
+          <div className="form-group checkbox-group">
+            <input
+              type="checkbox"
+              id="consent"
+              name="consent"
+              checked={respondentData.consent}
+              onChange={handleRespondentDataChange}
+              required
+            />
+            <label htmlFor="consent">
+              Я даю согласие на обработку моих персональных данных{" "}
+              <span className="required-mark">*</span>
+            </label>
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="primary-button">
+              Начать опрос
+            </button>
+          </div>
+        </form>
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div className="survey-container">
@@ -345,6 +430,22 @@ const SurveyPage = () => {
             На главную
           </button>
         </div>
+      </div>
+    )
+  }
+
+  // Если пользователь еще не ввел информацию о себе и это не предпросмотр, показываем форму
+  if (!userInfoSubmitted && !isPreview) {
+    return (
+      <div className="survey-container">
+        <header className="survey-header">
+          <h1>{survey.title}</h1>
+          {survey.description && (
+            <p className="survey-description">{survey.description}</p>
+          )}
+        </header>
+
+        <main className="survey-content">{renderUserInfoForm()}</main>
       </div>
     )
   }
@@ -398,43 +499,6 @@ const SurveyPage = () => {
 
           {renderQuestionContent(currentQuestion)}
         </div>
-
-        {isLastQuestion && !isPreview && (
-          <div className="respondent-form">
-            <h3>Завершение опроса</h3>
-            <p className="form-note">
-              Оставьте свой email, если хотите получать информацию о наших
-              услугах.
-            </p>
-
-            <div className="form-group">
-              <label htmlFor="email">Email:</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={respondentData.email}
-                onChange={handleRespondentDataChange}
-                placeholder="example@mail.ru"
-              />
-            </div>
-
-            <div className="form-group checkbox-group">
-              <input
-                type="checkbox"
-                id="consent"
-                name="consent"
-                checked={respondentData.consent}
-                onChange={handleRespondentDataChange}
-                required
-              />
-              <label htmlFor="consent">
-                Я даю согласие на обработку моих персональных данных{" "}
-                <span className="required-mark">*</span>
-              </label>
-            </div>
-          </div>
-        )}
 
         <div className="navigation-buttons">
           {currentQuestionIndex > 0 && (

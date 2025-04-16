@@ -61,7 +61,7 @@ class SurveyService {
   // Получение опросника по ID
   async getSurveyById(id) {
     try {
-      const response = await this.api.get(`/${id}`)
+      const response = await this.api.get(`/public/${id}`)
       return response.data
     } catch (error) {
       console.error(`Ошибка при получении опросника с ID ${id}:`, error)
@@ -127,10 +127,34 @@ class SurveyService {
     }
   }
 
+  // Получение ответов на опросник по ID опросника
+  async getSurveyResponses(surveyId) {
+    try {
+      const response = await this.api.get(`responses/${surveyId}`)
+      return response.data
+    } catch (error) {
+      console.error(
+        `Ошибка при получении ответов на опросник с ID ${surveyId}:`,
+        error
+      )
+      throw error
+    }
+  }
+
   // Отправка ответов на опрос
   async submitSurveyResponse(responseData) {
     try {
-      const response = await axios.post(`${API_URL}/responses`, responseData)
+      console.log(
+        "Отправка ответов на опрос:",
+        JSON.stringify(responseData, null, 2)
+      )
+
+      // Проверяем наличие данных о респонденте
+      if (!responseData.respondent) {
+        throw new Error("Отсутствуют данные о респонденте")
+      }
+
+      const response = await this.api.post(`/responses`, responseData)
       return response.data
     } catch (error) {
       console.error("Ошибка при отправке ответов на опрос:", error)

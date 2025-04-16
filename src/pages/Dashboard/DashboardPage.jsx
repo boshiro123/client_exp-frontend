@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { authService } from "../../api/auth"
 import { surveyService } from "../../api/survey"
+import Sidebar from "../../components/common/Sidebar"
 import "../../components/common/AuthStyles.css"
 import "./DashboardStyles.css"
 
@@ -593,13 +594,11 @@ const DashboardPage = () => {
 
   return (
     <div className="dashboard-container">
+      <Sidebar user={user} />
       <header className="dashboard-header">
         <h1>Панель управления клиентским опытом</h1>
         <div className="user-info">
           <span>Пользователь: {user.username}</span>
-          <button className="logout-button" onClick={handleLogout}>
-            Выйти
-          </button>
         </div>
       </header>
 

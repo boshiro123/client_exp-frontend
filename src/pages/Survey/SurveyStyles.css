@@ -588,3 +588,52 @@
     font-size: 16px;
   }
 }
+
+/* Стили для формы ввода данных пользователя */
+.user-info-form {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  padding: 35px;
+  margin: 20px 0 40px;
+}
+
+.user-info-form h2 {
+  font-size: 24px;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.user-info-form .form-note {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 16px;
+  color: #666;
+}
+
+.user-info-form .form-group {
+  margin-bottom: 25px;
+}
+
+.user-info-form .form-group label {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.user-info-form .form-actions {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.user-info-form .primary-button {
+  min-width: 200px;
+  padding: 14px 28px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.user-info-form .primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
