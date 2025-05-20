@@ -12,6 +12,8 @@ import DashboardPage from "./pages/Dashboard/DashboardPage"
 import SurveyPage from "./pages/Survey/SurveyPage"
 import SurveysListPage from "./pages/Survey/SurveysListPage"
 import StatisticsPage from "./pages/Dashboard/StatisticsPage"
+import DistributionPage from "./pages/Dashboard/DistributionPage"
+import AdminPage from "./pages/admin/AdminPage"
 import ProtectedRoute from "./components/common/ProtectedRoute"
 
 function App() {
@@ -29,11 +31,12 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/statistics" element={<StatisticsPage />} />
+            <Route path="/distribution" element={<DistributionPage />} />
           </Route>
 
           {/* Маршруты только для администраторов */}
           <Route element={<ProtectedRoute adminOnly={true} />}>
-            <Route path="/admin" element={<div>Административная панель</div>} />
+            <Route path="/admin" element={<AdminPage />} />
           </Route>
 
           {/* Перенаправление на страницу входа по умолчанию */}

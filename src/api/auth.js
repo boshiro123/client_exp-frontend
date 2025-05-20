@@ -6,6 +6,15 @@ export const authService = {
   async login(credentials) {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, credentials)
+
+      if (response.data.user && response.data.user.role === "PENDING") {
+        localStorage.setItem(
+          "loginError",
+          "Ваша учетная запись ожидает одобрения администратором. Проверьте электронную почту для получения дальнейших инструкций."
+        )
+        throw new Error("Учетная запись ожидает одобрения")
+      }
+
       if (response.data.token) {
         localStorage.setItem("token", response.data.token)
         localStorage.setItem("user", JSON.stringify(response.data.user))
@@ -15,12 +24,22 @@ export const authService = {
     } catch (error) {
       console.error("Login error:", error)
       if (error.response) {
-        const errorMsg =
-          error.response.data?.message ||
-          (error.response.status === 401
-            ? "Неверный email или пароль"
-            : "Произошла ошибка при авторизации")
-        localStorage.setItem("loginError", errorMsg)
+        if (
+          error.response.status === 403 &&
+          error.response.data?.message?.includes("одобрения")
+        ) {
+          localStorage.setItem(
+            "loginError",
+            "Ваша учетная запись ожидает одобрения администратором"
+          )
+        } else {
+          const errorMsg =
+            error.response.data?.message ||
+            (error.response.status === 401
+              ? "Неверный email или пароль"
+              : "Произошла ошибка при авторизации")
+          localStorage.setItem("loginError", errorMsg)
+        }
       } else if (error.request) {
         localStorage.setItem(
           "loginError",
@@ -39,11 +58,11 @@ export const authService = {
   async register(userData) {
     try {
       const response = await axios.post(`${API_URL}/auth/register`, userData)
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token)
-        localStorage.setItem("user", JSON.stringify(response.data.user))
+      return {
+        ...response.data,
+        success: true,
+        pendingApproval: true,
       }
-      return response.data
     } catch (error) {
       console.error("Registration error:", error)
       throw error

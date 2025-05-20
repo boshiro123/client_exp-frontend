@@ -1,5 +1,6 @@
 // Роли пользователей
 export const UserRole = {
-  ADMIN: "admin",
-  MANAGER: "manager",
+  ADMIN: "ADMIN",
+  MANAGER: "MANAGER",
+  PENDING: "PENDING",
 }

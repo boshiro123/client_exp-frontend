@@ -1060,3 +1060,69 @@
   font-size: 12px;
   display: inline-block;
 }
+
+/* Стили для страницы рассылок */
+.distribution-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.distribution-section {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.distribution-section h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.distribution-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.distribution-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.distribution-form label {
+  font-weight: 500;
+  color: #555;
+}
+
+.distribution-form .form-control {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.distribution-form textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.distribution-form select.form-control {
+  height: 42px;
+}
+
+@media screen and (min-width: 1024px) {
+  .distribution-container {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .distribution-section {
+    flex: 1;
+  }
+}

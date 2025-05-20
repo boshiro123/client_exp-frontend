@@ -8,7 +8,9 @@ const icons = {
   dashboard: "📊",
   segment: "🔍",
   statistics: "📈",
+  distribution: "📧",
   settings: "⚙️",
+  admin: "👑",
   logout: "🚪",
 }
 
@@ -69,6 +71,26 @@ const Sidebar = ({ user }) => {
           <span className="sidebar-nav-icon">{icons.statistics}</span>
           <span className="sidebar-nav-text">Статистика</span>
         </NavLink>
+
+        <NavLink
+          to="/distribution"
+          className={`sidebar-nav-item ${
+            isActive("/distribution") ? "active" : ""
+          }`}
+        >
+          <span className="sidebar-nav-icon">{icons.distribution}</span>
+          <span className="sidebar-nav-text">Рассылки</span>
+        </NavLink>
+
+        {user && user.role === "ADMIN" && (
+          <NavLink
+            to="/admin"
+            className={`sidebar-nav-item ${isActive("/admin") ? "active" : ""}`}
+          >
+            <span className="sidebar-nav-icon">{icons.admin}</span>
+            <span className="sidebar-nav-text">Управление пользователями</span>
+          </NavLink>
+        )}
 
         <NavLink
           to="/dashboard/segments"
