@@ -12,6 +12,7 @@ const icons = {
   settings: "⚙️",
   admin: "👑",
   logout: "🚪",
+  questions: "❓",
 }
 
 const Sidebar = ({ user }) => {
@@ -100,6 +101,16 @@ const Sidebar = ({ user }) => {
         >
           <span className="sidebar-nav-icon">{icons.segment}</span>
           <span className="sidebar-nav-text">Сегменты</span>
+        </NavLink>
+
+        <NavLink
+          to="/questions"
+          className={`sidebar-nav-item ${
+            isActive("/questions") ? "active" : ""
+          }`}
+        >
+          <span className="sidebar-nav-icon">{icons.questions}</span>
+          <span className="sidebar-nav-text">База вопросов</span>
         </NavLink>
       </nav>
 

@@ -14,6 +14,7 @@ import SurveysListPage from "./pages/Survey/SurveysListPage"
 import StatisticsPage from "./pages/Dashboard/StatisticsPage"
 import DistributionPage from "./pages/Dashboard/DistributionPage"
 import AdminPage from "./pages/admin/AdminPage"
+import QuestionsPage from "./pages/Questions/QuestionsPage"
 import ProtectedRoute from "./components/common/ProtectedRoute"
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/statistics" element={<StatisticsPage />} />
             <Route path="/distribution" element={<DistributionPage />} />
+            <Route path="/questions" element={<QuestionsPage />} />
           </Route>
 
           {/* Маршруты только для администраторов */}
