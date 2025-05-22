@@ -13,6 +13,7 @@ import SurveyPage from "./pages/Survey/SurveyPage"
 import SurveysListPage from "./pages/Survey/SurveysListPage"
 import StatisticsPage from "./pages/Dashboard/StatisticsPage"
 import DistributionPage from "./pages/Dashboard/DistributionPage"
+import ClientSegmentsPage from "./pages/Dashboard/ClientSegmentsPage"
 import AdminPage from "./pages/admin/AdminPage"
 import QuestionsPage from "./pages/Questions/QuestionsPage"
 import ProtectedRoute from "./components/common/ProtectedRoute"
@@ -31,6 +32,10 @@ function App() {
           {/* Защищенные маршруты с использованием Outlet */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route
+              path="/dashboard/segments"
+              element={<ClientSegmentsPage />}
+            />
             <Route path="/statistics" element={<StatisticsPage />} />
             <Route path="/distribution" element={<DistributionPage />} />
             <Route path="/questions" element={<QuestionsPage />} />
