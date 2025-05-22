@@ -13,6 +13,7 @@ const icons = {
   admin: "👑",
   logout: "🚪",
   questions: "❓",
+  issues: "⚠️",
 }
 
 const Sidebar = ({ user }) => {
@@ -111,6 +112,14 @@ const Sidebar = ({ user }) => {
         >
           <span className="sidebar-nav-icon">{icons.questions}</span>
           <span className="sidebar-nav-text">База вопросов</span>
+        </NavLink>
+
+        <NavLink
+          to="/issues"
+          className={`sidebar-nav-item ${isActive("/issues") ? "active" : ""}`}
+        >
+          <span className="sidebar-nav-icon">{icons.issues}</span>
+          <span className="sidebar-nav-text">Проблемные места</span>
         </NavLink>
       </nav>
 

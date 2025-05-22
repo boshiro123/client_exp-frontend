@@ -17,6 +17,7 @@ import ClientSegmentsPage from "./pages/Dashboard/ClientSegmentsPage"
 import AdminPage from "./pages/admin/AdminPage"
 import QuestionsPage from "./pages/Questions/QuestionsPage"
 import ProtectedRoute from "./components/common/ProtectedRoute"
+import IssuesPage from "./pages/Issues/IssuesPage"
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
             <Route path="/statistics" element={<StatisticsPage />} />
             <Route path="/distribution" element={<DistributionPage />} />
             <Route path="/questions" element={<QuestionsPage />} />
+            <Route path="/issues" element={<IssuesPage />} />
           </Route>
 
           {/* Маршруты только для администраторов */}
