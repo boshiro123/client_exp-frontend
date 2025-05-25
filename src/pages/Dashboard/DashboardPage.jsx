@@ -900,14 +900,7 @@ const DashboardPage = () => {
   return (
     <div className="dashboard-container">
       <Sidebar user={user} />
-      <header className="dashboard-header">
-        <h1>Панель управления клиентским опытом</h1>
-        <div className="user-info">
-          <span>Пользователь: {user.username}</span>
-        </div>
-      </header>
-
-      <main className="dashboard-content">
+      <div className="dashboard-content">
         {!showSurveyForm ? (
           <div className="dashboard-actions">
             <h2>Добро пожаловать, {user.username}!</h2>
@@ -1433,169 +1426,169 @@ const DashboardPage = () => {
             </div>
           </div>
         )}
-      </main>
 
-      {/* Модальное окно для выбора существующих вопросов */}
-      {showExistingQuestions && (
-        <div className="modal-overlay" onClick={handleCloseExistingQuestions}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Выбрать вопрос из базы</h3>
-              <button
-                className="modal-close-button"
-                onClick={handleCloseExistingQuestions}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="modal-body">
-              {/* Поиск */}
-              <div className="search-section">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Поиск по тексту вопроса или категории..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              {/* Загрузка */}
-              {loadingQuestions && (
-                <div className="loading-indicator">Загрузка вопросов...</div>
-              )}
-
-              {/* Список вопросов */}
-              {!loadingQuestions && (
-                <div className="questions-list">
-                  {getFilteredQuestions().length === 0 ? (
-                    <div className="empty-state">
-                      <p>Вопросы не найдены</p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="questions-summary">
-                        Найдено: {getFilteredQuestions().length}, доступно:{" "}
-                        {
-                          getFilteredQuestions().filter(
-                            q =>
-                              !surveyData.questions.some(
-                                sq =>
-                                  sq.text.toLowerCase().trim() ===
-                                  q.text.toLowerCase().trim()
-                              )
-                          ).length
-                        }
-                      </div>
-                      {getFilteredQuestions().map(question => {
-                        const isSelected = selectedExistingQuestions.some(
-                          q => q.id === question.id
-                        )
-                        const isDuplicate = surveyData.questions.some(
-                          q =>
-                            q.text.toLowerCase().trim() ===
-                            question.text.toLowerCase().trim()
-                        )
-
-                        return (
-                          <div
-                            key={question.id}
-                            className={`question-item ${
-                              isSelected ? "selected" : ""
-                            } ${isDuplicate ? "duplicate" : ""}`}
-                            onClick={() =>
-                              !isDuplicate && toggleExistingQuestion(question)
-                            }
-                          >
-                            <div className="question-checkbox">
-                              <input
-                                type="radio"
-                                checked={isSelected}
-                                onChange={() =>
-                                  !isDuplicate &&
-                                  toggleExistingQuestion(question)
-                                }
-                                name="selectedQuestion"
-                                disabled={isDuplicate}
-                              />
-                            </div>
-
-                            <div className="question-details">
-                              <div className="question-text">
-                                {question.text}
-                                {isDuplicate && (
-                                  <span className="duplicate-label">
-                                    (уже добавлен)
-                                  </span>
-                                )}
-                              </div>
-                              <div className="question-meta">
-                                <span className="question-type">
-                                  {question.type === "SINGLE_CHOICE"
-                                    ? "Один вариант"
-                                    : question.type === "MULTIPLE_CHOICE"
-                                    ? "Несколько вариантов"
-                                    : question.type === "TEXT"
-                                    ? "Текст"
-                                    : question.type === "RATING"
-                                    ? "Рейтинг"
-                                    : question.type}
-                                </span>
-                                {question.category && (
-                                  <span className="question-category">
-                                    • {question.category}
-                                  </span>
-                                )}
-                                {question.required && (
-                                  <span className="question-required">
-                                    • Обязательный
-                                  </span>
-                                )}
-                              </div>
-                              {question.options &&
-                                question.options.length > 0 && (
-                                  <div className="question-options-preview">
-                                    Варианты:{" "}
-                                    {question.options.slice(0, 3).join(", ")}
-                                    {question.options.length > 3 && "..."}
-                                  </div>
-                                )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="modal-footer">
-              <div className="selected-count">
-                {selectedExistingQuestions.length > 0
-                  ? "Выбран 1 вопрос"
-                  : "Выберите вопрос"}
-              </div>
-              <div className="modal-actions">
+        {/* Модальное окно для выбора существующих вопросов */}
+        {showExistingQuestions && (
+          <div className="modal-overlay" onClick={handleCloseExistingQuestions}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Выбрать вопрос из базы</h3>
                 <button
-                  className="secondary-button"
+                  className="modal-close-button"
                   onClick={handleCloseExistingQuestions}
                 >
-                  Отмена
+                  ✕
                 </button>
-                <button
-                  className="primary-button"
-                  onClick={fillFormWithSelectedQuestion}
-                  disabled={selectedExistingQuestions.length === 0}
-                >
-                  Добавить выбранный вопрос
-                </button>
+              </div>
+
+              <div className="modal-body">
+                {/* Поиск */}
+                <div className="search-section">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Поиск по тексту вопроса или категории..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                {/* Загрузка */}
+                {loadingQuestions && (
+                  <div className="loading-indicator">Загрузка вопросов...</div>
+                )}
+
+                {/* Список вопросов */}
+                {!loadingQuestions && (
+                  <div className="questions-list">
+                    {getFilteredQuestions().length === 0 ? (
+                      <div className="empty-state">
+                        <p>Вопросы не найдены</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="questions-summary">
+                          Найдено: {getFilteredQuestions().length}, доступно:{" "}
+                          {
+                            getFilteredQuestions().filter(
+                              q =>
+                                !surveyData.questions.some(
+                                  sq =>
+                                    sq.text.toLowerCase().trim() ===
+                                    q.text.toLowerCase().trim()
+                                )
+                            ).length
+                          }
+                        </div>
+                        {getFilteredQuestions().map(question => {
+                          const isSelected = selectedExistingQuestions.some(
+                            q => q.id === question.id
+                          )
+                          const isDuplicate = surveyData.questions.some(
+                            q =>
+                              q.text.toLowerCase().trim() ===
+                              question.text.toLowerCase().trim()
+                          )
+
+                          return (
+                            <div
+                              key={question.id}
+                              className={`question-item ${
+                                isSelected ? "selected" : ""
+                              } ${isDuplicate ? "duplicate" : ""}`}
+                              onClick={() =>
+                                !isDuplicate && toggleExistingQuestion(question)
+                              }
+                            >
+                              <div className="question-checkbox">
+                                <input
+                                  type="radio"
+                                  checked={isSelected}
+                                  onChange={() =>
+                                    !isDuplicate &&
+                                    toggleExistingQuestion(question)
+                                  }
+                                  name="selectedQuestion"
+                                  disabled={isDuplicate}
+                                />
+                              </div>
+
+                              <div className="question-details">
+                                <div className="question-text">
+                                  {question.text}
+                                  {isDuplicate && (
+                                    <span className="duplicate-label">
+                                      (уже добавлен)
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="question-meta">
+                                  <span className="question-type">
+                                    {question.type === "SINGLE_CHOICE"
+                                      ? "Один вариант"
+                                      : question.type === "MULTIPLE_CHOICE"
+                                      ? "Несколько вариантов"
+                                      : question.type === "TEXT"
+                                      ? "Текст"
+                                      : question.type === "RATING"
+                                      ? "Рейтинг"
+                                      : question.type}
+                                  </span>
+                                  {question.category && (
+                                    <span className="question-category">
+                                      • {question.category}
+                                    </span>
+                                  )}
+                                  {question.required && (
+                                    <span className="question-required">
+                                      • Обязательный
+                                    </span>
+                                  )}
+                                </div>
+                                {question.options &&
+                                  question.options.length > 0 && (
+                                    <div className="question-options-preview">
+                                      Варианты:{" "}
+                                      {question.options.slice(0, 3).join(", ")}
+                                      {question.options.length > 3 && "..."}
+                                    </div>
+                                  )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="modal-footer">
+                <div className="selected-count">
+                  {selectedExistingQuestions.length > 0
+                    ? "Выбран 1 вопрос"
+                    : "Выберите вопрос"}
+                </div>
+                <div className="modal-actions">
+                  <button
+                    className="secondary-button"
+                    onClick={handleCloseExistingQuestions}
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    className="primary-button"
+                    onClick={fillFormWithSelectedQuestion}
+                    disabled={selectedExistingQuestions.length === 0}
+                  >
+                    Добавить выбранный вопрос
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

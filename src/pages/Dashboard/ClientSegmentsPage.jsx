@@ -17,13 +17,17 @@ const getAgeGroupLabel = ageGroup => {
   return groups[ageGroup] || ageGroup || "—"
 }
 
-const getGenderLabel = gender => {
-  const genders = {
-    MALE: "Мужской",
-    FEMALE: "Женский",
-    OTHER: "Другой",
+const getRegionLabel = region => {
+  const regions = {
+    BREST: "Брестская область",
+    VITEBSK: "Витебская область",
+    GOMEL: "Гомельская область",
+    GRODNO: "Гродненская область",
+    MINSK_REGION: "Минская область",
+    MOGILEV: "Могилевская область",
+    MINSK_CITY: "г. Минск",
   }
-  return genders[gender] || gender || "—"
+  return regions[region] || region || "—"
 }
 
 const formatDate = dateString => {
@@ -41,92 +45,20 @@ const formatDate = dateString => {
 const mapAgeAnswerToGroup = answer => {
   if (!answer) return null
 
-  // Предполагаем различные форматы ответов и преобразуем их в стандартные группы
   answer = answer.toLowerCase().trim()
 
   // Прямое соответствие для стандартных форматов возрастных групп
-  const directMatches = {
-    "18-24 года": "AGE_18_24",
-    "18-24": "AGE_18_24",
-    "25-34 года": "AGE_25_34",
-    "25-34": "AGE_25_34",
-    "35-44 года": "AGE_35_44",
-    "35-44": "AGE_35_44",
-    "45-54 года": "AGE_45_54",
-    "45-54": "AGE_45_54",
-    "55 лет и старше": "AGE_55_PLUS",
-    "55+": "AGE_55_PLUS",
-    "старше 55": "AGE_55_PLUS",
-  }
-
-  // Проверяем на точное соответствие
-  if (directMatches[answer]) {
-    return directMatches[answer]
-  }
-
-  // Если точного соответствия нет, используем логику с includes
-  if (
-    answer.includes("18-24") ||
-    (answer.includes("лет") &&
-      (answer.includes("18") ||
-        answer.includes("19") ||
-        answer.includes("20") ||
-        answer.includes("21") ||
-        answer.includes("22") ||
-        answer.includes("23") ||
-        answer.includes("24")))
-  ) {
+  if (answer.includes("до 18") || answer.includes("менее 18")) {
+    return "AGE_UNDER_18"
+  } else if (answer.includes("18–25") || answer.includes("18-25")) {
     return "AGE_18_24"
-  } else if (
-    answer.includes("25-34") ||
-    (answer.includes("лет") &&
-      (answer.includes("25") ||
-        answer.includes("26") ||
-        answer.includes("27") ||
-        answer.includes("28") ||
-        answer.includes("29") ||
-        answer.includes("30") ||
-        answer.includes("31") ||
-        answer.includes("32") ||
-        answer.includes("33") ||
-        answer.includes("34")))
-  ) {
+  } else if (answer.includes("26–35") || answer.includes("26-35")) {
     return "AGE_25_34"
-  } else if (
-    answer.includes("35-44") ||
-    (answer.includes("лет") &&
-      (answer.includes("35") ||
-        answer.includes("36") ||
-        answer.includes("37") ||
-        answer.includes("38") ||
-        answer.includes("39") ||
-        answer.includes("40") ||
-        answer.includes("41") ||
-        answer.includes("42") ||
-        answer.includes("43") ||
-        answer.includes("44")))
-  ) {
+  } else if (answer.includes("36–45") || answer.includes("36-45")) {
     return "AGE_35_44"
-  } else if (
-    answer.includes("45-54") ||
-    (answer.includes("лет") &&
-      (answer.includes("45") ||
-        answer.includes("46") ||
-        answer.includes("47") ||
-        answer.includes("48") ||
-        answer.includes("49") ||
-        answer.includes("50") ||
-        answer.includes("51") ||
-        answer.includes("52") ||
-        answer.includes("53") ||
-        answer.includes("54")))
-  ) {
+  } else if (answer.includes("46–60") || answer.includes("46-60")) {
     return "AGE_45_54"
-  } else if (
-    answer.includes("55+") ||
-    answer.includes("старше 55") ||
-    (answer.includes("лет") && parseInt(answer) >= 55)
-  ) {
+  } else if (answer.includes("60+") || answer.includes("старше 60")) {
     return "AGE_55_PLUS"
   }
 
@@ -134,41 +66,40 @@ const mapAgeAnswerToGroup = answer => {
   const numMatch = answer.match(/\d+/)
   if (numMatch) {
     const age = parseInt(numMatch[0])
-    if (age >= 18 && age <= 24) return "AGE_18_24"
-    if (age >= 25 && age <= 34) return "AGE_25_34"
-    if (age >= 35 && age <= 44) return "AGE_35_44"
-    if (age >= 45 && age <= 54) return "AGE_45_54"
-    if (age >= 55) return "AGE_55_PLUS"
+    if (age < 18) return "AGE_UNDER_18"
+    if (age >= 18 && age <= 25) return "AGE_18_24"
+    if (age >= 26 && age <= 35) return "AGE_25_34"
+    if (age >= 36 && age <= 45) return "AGE_35_44"
+    if (age >= 46 && age <= 60) return "AGE_45_54"
+    if (age > 60) return "AGE_55_PLUS"
   }
 
   return null
 }
 
-// Функция для преобразования текстового ответа о поле в стандартный формат
-const mapGenderAnswer = answer => {
+// Функция для преобразования текстового ответа о регионе в стандартный формат
+const mapRegionAnswer = answer => {
   if (!answer) return null
 
-  answer = answer.toLowerCase()
+  answer = answer.toLowerCase().trim()
 
-  if (
-    answer.includes("муж") ||
-    answer === "м" ||
-    answer === "m" ||
-    answer.includes("male") ||
-    answer.includes("мужской")
-  ) {
-    return "MALE"
-  } else if (
-    answer.includes("жен") ||
-    answer === "ж" ||
-    answer === "f" ||
-    answer.includes("female") ||
-    answer.includes("женский")
-  ) {
-    return "FEMALE"
-  } else {
-    return "OTHER"
+  if (answer.includes("брест")) {
+    return "BREST"
+  } else if (answer.includes("витебск")) {
+    return "VITEBSK"
+  } else if (answer.includes("гомель")) {
+    return "GOMEL"
+  } else if (answer.includes("гродн")) {
+    return "GRODNO"
+  } else if (answer.includes("минская") && answer.includes("область")) {
+    return "MINSK_REGION"
+  } else if (answer.includes("могилев")) {
+    return "MOGILEV"
+  } else if (answer.includes("минск") && !answer.includes("область")) {
+    return "MINSK_CITY"
   }
+
+  return null
 }
 
 const ClientSegmentsPage = () => {
@@ -181,24 +112,35 @@ const ClientSegmentsPage = () => {
   // Состояние для фильтров
   const [filters, setFilters] = useState({
     ageGroup: "ALL",
-    gender: "ALL",
+    region: "ALL",
     profession: "",
   })
 
-  // Идентификаторы вопросов для возраста, пола и профессии
-  // Может потребоваться настройка в зависимости от вашей базы данных
-  const AGE_QUESTION_ID = 1 // ID вопроса о возрасте
-  const GENDER_QUESTION_ID = 2 // ID вопроса о поле
-  const PROFESSION_QUESTION_ID = 3 // ID вопроса о профессии
+  // Идентификаторы вопросов согласно реальным данным из базы
+  const AGE_QUESTION_ID = 16 // "Укажите ваш возраст"
+  const REGION_QUESTION_ID = 17 // "Из какого региона Беларуси вы?"
+  const PROFESSION_QUESTION_ID = 18 // "Ваша профессия или сфера деятельности"
 
   // Загружаем опции для фильтров
   const ageGroups = [
     { value: "ALL", label: "Все возрасты" },
-    ...clientSegmentsService.getAgeGroups(),
+    { value: "AGE_UNDER_18", label: "До 18 лет" },
+    { value: "AGE_18_24", label: "18–25 лет" },
+    { value: "AGE_25_34", label: "26–35 лет" },
+    { value: "AGE_35_44", label: "36–45 лет" },
+    { value: "AGE_45_54", label: "46–60 лет" },
+    { value: "AGE_55_PLUS", label: "60+ лет" },
   ]
-  const genders = [
-    { value: "ALL", label: "Любой пол" },
-    ...clientSegmentsService.getGenders(),
+
+  const regions = [
+    { value: "ALL", label: "Все регионы" },
+    { value: "BREST", label: "Брестская область" },
+    { value: "VITEBSK", label: "Витебская область" },
+    { value: "GOMEL", label: "Гомельская область" },
+    { value: "GRODNO", label: "Гродненская область" },
+    { value: "MINSK_REGION", label: "Минская область" },
+    { value: "MOGILEV", label: "Могилевская область" },
+    { value: "MINSK_CITY", label: "г. Минск" },
   ]
 
   const navigate = useNavigate()
@@ -216,74 +158,126 @@ const ClientSegmentsPage = () => {
 
   // Обрабатываем клиентов, извлекая информацию из их ответов
   const processedClients = useMemo(() => {
-    return clients.map(client => {
-      const answers = client.answers || []
+    console.log("🔄 Начинаем обработку клиентов...")
+    console.log("📋 ID вопросов для маппинга:", {
+      возраст: AGE_QUESTION_ID,
+      регион: REGION_QUESTION_ID,
+      профессия: PROFESSION_QUESTION_ID,
+    })
 
-      // Извлекаем ответы на вопросы о возрасте, поле и профессии
+    return clients.map((client, index) => {
+      const answers = client.answers || []
+      console.log(
+        `👤 Обрабатываем клиента ${index + 1} (ID: ${client.id}):`,
+        client.name
+      )
+      console.log(`  📝 Количество ответов: ${answers.length}`)
+
+      // Извлекаем ответы на вопросы о возрасте, регионе и профессии
       let ageAnswer = null
-      let genderAnswer = null
+      let regionAnswer = null
       let professionAnswer = null
 
       answers.forEach(answer => {
+        console.log(`    ❓ Вопрос ID ${answer.questionId}: "${answer.answer}"`)
+
         if (answer.questionId === AGE_QUESTION_ID) {
           ageAnswer = answer.answer
-        } else if (answer.questionId === GENDER_QUESTION_ID) {
-          genderAnswer = answer.answer
+          console.log(
+            `    🎂 Найден ответ на вопрос о возрасте: "${ageAnswer}"`
+          )
+        } else if (answer.questionId === REGION_QUESTION_ID) {
+          regionAnswer = answer.answer
+          console.log(
+            `    🗺️ Найден ответ на вопрос о регионе: "${regionAnswer}"`
+          )
         } else if (answer.questionId === PROFESSION_QUESTION_ID) {
           professionAnswer = answer.answer
+          console.log(
+            `    💼 Найден ответ на вопрос о профессии: "${professionAnswer}"`
+          )
         }
       })
 
       // Преобразуем текстовые ответы в значения для фильтров
       const mappedAgeGroup = mapAgeAnswerToGroup(ageAnswer)
-      const mappedGender = mapGenderAnswer(genderAnswer)
+      const mappedRegion = mapRegionAnswer(regionAnswer)
+
+      console.log(`  🔄 Результаты маппинга для клиента ${client.name}:`)
+      console.log(`    Возраст: "${ageAnswer}" → ${mappedAgeGroup}`)
+      console.log(`    Регион: "${regionAnswer}" → ${mappedRegion}`)
+      console.log(`    Профессия: "${professionAnswer}"`)
 
       return {
         ...client,
         // Переопределяем значения для фильтрации на основе ответов
         ageFromAnswer: mappedAgeGroup,
-        genderFromAnswer: mappedGender,
+        regionFromAnswer: mappedRegion,
         professionFromAnswer: professionAnswer,
+        // Сохраняем оригинальные ответы для отображения
+        originalAgeAnswer: ageAnswer,
+        originalRegionAnswer: regionAnswer,
+        originalProfessionAnswer: professionAnswer,
       }
     })
-  }, [clients, AGE_QUESTION_ID, GENDER_QUESTION_ID, PROFESSION_QUESTION_ID])
+  }, [clients, AGE_QUESTION_ID, REGION_QUESTION_ID, PROFESSION_QUESTION_ID])
 
   // При изменении фильтров обновляем отфильтрованный список
   useEffect(() => {
     if (processedClients.length > 0) {
+      console.log("🔍 Применяем фильтры:", filters)
+
       // Фильтруем клиентов на основе ответов на вопросы
-      setFilteredClients(
-        processedClients.filter(client => {
-          // Фильтр по возрастной группе на основе ответа на вопрос
-          if (
-            filters.ageGroup &&
-            filters.ageGroup !== "ALL" &&
-            client.ageFromAnswer !== filters.ageGroup
-          ) {
+      const filtered = processedClients.filter(client => {
+        console.log(`🔎 Проверяем клиента ${client.name}:`)
+        console.log(
+          `  Возраст: ${client.ageFromAnswer} (фильтр: ${filters.ageGroup})`
+        )
+        console.log(
+          `  Регион: ${client.regionFromAnswer} (фильтр: ${filters.region})`
+        )
+        console.log(
+          `  Профессия: ${client.professionFromAnswer} (фильтр: ${filters.profession})`
+        )
+
+        // Фильтр по возрастной группе на основе ответа на вопрос
+        if (
+          filters.ageGroup &&
+          filters.ageGroup !== "ALL" &&
+          client.ageFromAnswer !== filters.ageGroup
+        ) {
+          console.log(`  ❌ Отфильтрован по возрасту`)
+          return false
+        }
+
+        // Фильтр по региону на основе ответа на вопрос
+        if (
+          filters.region &&
+          filters.region !== "ALL" &&
+          client.regionFromAnswer !== filters.region
+        ) {
+          console.log(`  ❌ Отфильтрован по региону`)
+          return false
+        }
+
+        // Фильтр по профессии на основе ответа на вопрос
+        if (filters.profession && client.professionFromAnswer) {
+          const clientProfession = client.professionFromAnswer.toLowerCase()
+          const searchProfession = filters.profession.toLowerCase()
+          if (!clientProfession.includes(searchProfession)) {
+            console.log(`  ❌ Отфильтрован по профессии`)
             return false
           }
+        }
 
-          // Фильтр по полу на основе ответа на вопрос
-          if (
-            filters.gender &&
-            filters.gender !== "ALL" &&
-            client.genderFromAnswer !== filters.gender
-          ) {
-            return false
-          }
+        console.log(`  ✅ Клиент прошел фильтры`)
+        return true
+      })
 
-          // Фильтр по профессии на основе ответа на вопрос
-          if (filters.profession && client.professionFromAnswer) {
-            const clientProfession = client.professionFromAnswer.toLowerCase()
-            const searchProfession = filters.profession.toLowerCase()
-            if (!clientProfession.includes(searchProfession)) {
-              return false
-            }
-          }
-
-          return true
-        })
+      console.log(
+        `📊 Результат фильтрации: ${filtered.length} из ${processedClients.length} клиентов`
       )
+      setFilteredClients(filtered)
     }
   }, [processedClients, filters])
 
@@ -291,6 +285,17 @@ const ClientSegmentsPage = () => {
     try {
       setLoading(true)
       const clientsData = await clientSegmentsService.getClientsWithAnswers()
+      console.log("🔍 Полученные данные клиентов:", clientsData)
+      console.log("📊 Количество клиентов:", clientsData.length)
+
+      // Логируем структуру первого клиента для понимания формата данных
+      if (clientsData.length > 0) {
+        console.log("👤 Пример структуры клиента:", clientsData[0])
+        if (clientsData[0].answers) {
+          console.log("💬 Пример ответов клиента:", clientsData[0].answers)
+        }
+      }
+
       setClients(clientsData)
       setError(null)
     } catch (err) {
@@ -315,7 +320,7 @@ const ClientSegmentsPage = () => {
   const clearFilters = () => {
     setFilters({
       ageGroup: "ALL",
-      gender: "ALL",
+      region: "ALL",
       profession: "",
     })
   }
@@ -350,14 +355,14 @@ const ClientSegmentsPage = () => {
             </div>
 
             <div className="filter-group">
-              <label htmlFor="gender">Пол:</label>
+              <label htmlFor="region">Регион:</label>
               <select
-                id="gender"
-                name="gender"
-                value={filters.gender}
+                id="region"
+                name="region"
+                value={filters.region}
                 onChange={handleFilterChange}
               >
-                {genders.map(option => (
+                {regions.map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -400,15 +405,15 @@ const ClientSegmentsPage = () => {
                   <th>Email</th>
                   <th>Телефон</th>
                   <th>Возраст</th>
-                  <th>Пол</th>
                   <th>Регион</th>
+                  <th>Профессия</th>
                   <th>Дата регистрации</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredClients.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="no-data">
+                    <td colSpan="8" className="no-data">
                       Клиенты не найдены
                     </td>
                   </tr>
@@ -420,17 +425,16 @@ const ClientSegmentsPage = () => {
                       <td>{client.email}</td>
                       <td>{client.phone || "—"}</td>
                       <td>
-                        {getAgeGroupLabel(
-                          client.ageFromAnswer || client.ageGroup
-                        )}
+                        {client.originalAgeAnswer ||
+                          getAgeGroupLabel(client.ageFromAnswer) ||
+                          "—"}
                       </td>
                       <td>
-                        {getGenderLabel(
-                          client.genderFromAnswer || client.gender
-                        )}
+                        {client.originalRegionAnswer ||
+                          getRegionLabel(client.regionFromAnswer) ||
+                          "—"}
                       </td>
-
-                      <td>{client.region || "—"}</td>
+                      <td>{client.originalProfessionAnswer || "—"}</td>
                       <td>{formatDate(client.clientSince)}</td>
                     </tr>
                   ))
@@ -439,34 +443,6 @@ const ClientSegmentsPage = () => {
             </table>
           </div>
         )}
-
-        {/* Информация о вопросах
-        <div
-          className="info-block"
-          style={{
-            marginTop: "20px",
-            padding: "15px",
-            backgroundColor: "#f8f9fa",
-            borderRadius: "8px",
-          }}
-        >
-          <h3>Информация о фильтрах</h3>
-          <p>
-            Фильтрация клиентов происходит на основе их ответов на следующие
-            вопросы:
-          </p>
-          <ul>
-            <li>
-              <strong>Возраст:</strong> Вопрос №{AGE_QUESTION_ID}
-            </li>
-            <li>
-              <strong>Пол:</strong> Вопрос №{GENDER_QUESTION_ID}
-            </li>
-            <li>
-              <strong>Профессия:</strong> Вопрос №{PROFESSION_QUESTION_ID}
-            </li>
-          </ul>
-        </div> */}
       </div>
     </div>
   )
