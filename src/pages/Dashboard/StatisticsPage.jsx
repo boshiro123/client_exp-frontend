@@ -221,7 +221,7 @@ const StatisticsPage = () => {
 
       return (
         <div className="rating-stats">
-          <h4>Средний рейтинг: {averageRating.toFixed(1)} из 10</h4>
+          <h4>Средняя оценка: {averageRating.toFixed(1)} из 10</h4>
           <div className="rating-distribution">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(rating => {
               const count = ratings.filter(r => r === rating).length

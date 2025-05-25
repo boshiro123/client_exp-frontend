@@ -269,7 +269,7 @@ const QuestionsPage = () => {
       TEXT: "Текстовый",
       MULTIPLE_CHOICE: "Множественный выбор",
       SINGLE_CHOICE: "Одиночный выбор",
-      RATING: "Рейтинг",
+      RATING: "Оценка",
       DATE: "Дата",
     }
     return types[type] || type
@@ -384,7 +384,7 @@ const QuestionsPage = () => {
                     <option value="TEXT">Текстовый</option>
                     <option value="SINGLE_CHOICE">Одиночный выбор</option>
                     <option value="MULTIPLE_CHOICE">Множественный выбор</option>
-                    <option value="RATING">Рейтинг</option>
+                    <option value="RATING">Оценка</option>
                     <option value="DATE">Дата</option>
                   </select>
                 </div>
