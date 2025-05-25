@@ -2,9 +2,78 @@ import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { authService } from "../../api/auth"
 import { surveyService } from "../../api/survey"
+import { questionsService } from "../../api/questions"
 import Sidebar from "../../components/common/Sidebar"
 import "../../components/common/AuthStyles.css"
 import "./DashboardStyles.css"
+
+// SVG иконки для кнопок действий
+const icons = {
+  edit: (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+        fill="currentColor"
+      />
+    </svg>
+  ),
+  preview: (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+        fill="currentColor"
+      />
+    </svg>
+  ),
+  activate: (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M8 5v14l11-7z" fill="currentColor" />
+    </svg>
+  ),
+  stop: (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M6 6h12v12H6z" fill="currentColor" />
+    </svg>
+  ),
+  delete: (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+        fill="currentColor"
+      />
+    </svg>
+  ),
+}
 
 const DashboardPage = () => {
   const navigate = useNavigate()
@@ -32,11 +101,19 @@ const DashboardPage = () => {
         ],
       },
       {
-        text: "Ваш пол",
+        text: "Из какого региона Беларуси вы?",
         type: "single_choice",
         required: true,
-        category: "Демографическая информация",
-        options: ["Мужской", "Женский"],
+        category: "Географическая сегментация",
+        options: [
+          "Брестская область",
+          "Витебская область",
+          "Гомельская область",
+          "Гродненская область",
+          "Минская область",
+          "Могилевская область",
+          "г. Минск",
+        ],
       },
       {
         text: "Ваша профессия или сфера деятельности",
@@ -50,6 +127,53 @@ const DashboardPage = () => {
           "Руководитель/владелец бизнеса",
           "Другое",
         ],
+      },
+      {
+        text: "Оцените вашу удовлетворенность нашей услугой по шкале от 1 до 5",
+        type: "single_choice",
+        required: true,
+        category: "Сегментация по удовлетворенности",
+        options: [
+          "1 – Совсем не доволен",
+          "2 – Скорее не доволен",
+          "3 – Нейтрально",
+          "4 – Скорее доволен",
+          "5 – Полностью доволен",
+        ],
+      },
+      {
+        text: "Насколько вероятно, что вы порекомендуете нашу компанию друзьям?",
+        type: "rating",
+        required: true,
+        category: "Сегментация по удовлетворенности",
+        options: [],
+      },
+      {
+        text: "Оцените удобство взаимодействия с нашей компанией через веб сайт",
+        type: "single_choice",
+        required: true,
+        category: "Сегментация по удовлетворенности",
+        options: [
+          "1 – Очень легко",
+          "2 – Скорее легко",
+          "3 – Нейтрально",
+          "4 – Скорее сложно",
+          "5 – Очень сложно",
+        ],
+      },
+      {
+        text: "Какие аспекты нашей услуги вам понравились больше всего? (Можно выбрать несколько)",
+        type: "multiple_choice",
+        required: true,
+        category: "Сегментация по удовлетворенности",
+        options: ["Качество", "Скорость", "Цена", "Обслуживание", "Другое"],
+      },
+      {
+        text: "Какие аспекты нашей услуги вам не понравились? (Можно выбрать несколько)",
+        type: "multiple_choice",
+        required: false,
+        category: "Сегментация по удовлетворенности",
+        options: ["Качество", "Скорость", "Цена", "Обслуживание", "Другое"],
       },
     ],
   })
@@ -75,6 +199,13 @@ const DashboardPage = () => {
   const [surveys, setSurveys] = useState([])
   const [surveysFetching, setSurveysFetching] = useState(false)
   const [surveysError, setSurveysError] = useState("")
+
+  // Состояния для работы с существующими вопросами
+  const [existingQuestions, setExistingQuestions] = useState([])
+  const [showExistingQuestions, setShowExistingQuestions] = useState(false)
+  const [loadingQuestions, setLoadingQuestions] = useState(false)
+  const [selectedExistingQuestions, setSelectedExistingQuestions] = useState([])
+  const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
     const currentUser = authService.getCurrentUser()
@@ -121,6 +252,21 @@ const DashboardPage = () => {
     }
   }
 
+  // Функция для загрузки существующих вопросов
+  const fetchExistingQuestions = async () => {
+    setLoadingQuestions(true)
+    try {
+      const questions = await questionsService.getAllQuestions()
+      console.log("Получены существующие вопросы:", questions)
+      setExistingQuestions(questions)
+    } catch (error) {
+      console.error("Ошибка при загрузке существующих вопросов:", error)
+      alert("Не удалось загрузить существующие вопросы")
+    } finally {
+      setLoadingQuestions(false)
+    }
+  }
+
   const handleLogout = () => {
     authService.logout()
     navigate("/login")
@@ -150,11 +296,19 @@ const DashboardPage = () => {
           ],
         },
         {
-          text: "Ваш пол",
+          text: "Из какого региона Беларуси вы?",
           type: "single_choice",
           required: true,
-          category: "Демографическая информация",
-          options: ["Мужской", "Женский"],
+          category: "Географическая сегментация",
+          options: [
+            "Брестская область",
+            "Витебская область",
+            "Гомельская область",
+            "Гродненская область",
+            "Минская область",
+            "Могилевская область",
+            "г. Минск",
+          ],
         },
         {
           text: "Ваша профессия или сфера деятельности",
@@ -168,6 +322,53 @@ const DashboardPage = () => {
             "Руководитель/владелец бизнеса",
             "Другое",
           ],
+        },
+        {
+          text: "Оцените вашу удовлетворенность нашей услугой по шкале от 1 до 5",
+          type: "single_choice",
+          required: true,
+          category: "Сегментация по удовлетворенности",
+          options: [
+            "1 – Совсем не доволен",
+            "2 – Скорее не доволен",
+            "3 – Нейтрально",
+            "4 – Скорее доволен",
+            "5 – Полностью доволен",
+          ],
+        },
+        {
+          text: "Насколько вероятно, что вы порекомендуете нашу компанию друзьям?",
+          type: "rating",
+          required: true,
+          category: "Сегментация по удовлетворенности",
+          options: [],
+        },
+        {
+          text: "Оцените удобство взаимодействия с нашей компанией через веб сайт",
+          type: "single_choice",
+          required: true,
+          category: "Сегментация по удовлетворенности",
+          options: [
+            "1 – Очень легко",
+            "2 – Скорее легко",
+            "3 – Нейтрально",
+            "4 – Скорее сложно",
+            "5 – Очень сложно",
+          ],
+        },
+        {
+          text: "Какие аспекты нашей услуги вам понравились больше всего? (Можно выбрать несколько)",
+          type: "multiple_choice",
+          required: true,
+          category: "Сегментация по удовлетворенности",
+          options: ["Качество", "Скорость", "Цена", "Обслуживание", "Другое"],
+        },
+        {
+          text: "Какие аспекты нашей услуги вам не понравились? (Можно выбрать несколько)",
+          type: "multiple_choice",
+          required: false,
+          category: "Сегментация по удовлетворенности",
+          options: ["Качество", "Скорость", "Цена", "Обслуживание", "Другое"],
         },
       ],
     })
@@ -276,9 +477,18 @@ const DashboardPage = () => {
       return
     }
 
+    // Создаем копию вопроса с правильными options
+    const questionToAdd = {
+      ...newQuestion,
+      options:
+        newQuestion.type === "text" || newQuestion.type === "rating"
+          ? []
+          : newQuestion.options.filter(option => option.trim() !== ""),
+    }
+
     setSurveyData({
       ...surveyData,
-      questions: [...surveyData.questions, { ...newQuestion }],
+      questions: [...surveyData.questions, questionToAdd],
     })
 
     // Сбросить форму нового вопроса
@@ -292,8 +502,8 @@ const DashboardPage = () => {
   }
 
   const removeQuestion = index => {
-    if (index < 3) {
-      alert("Первые три вопроса обязательны и не могут быть удалены")
+    if (index < 8) {
+      alert("Первые восемь вопросов являются базовыми и не могут быть удалены")
       return
     }
 
@@ -310,6 +520,94 @@ const DashboardPage = () => {
 
     setCategories([...categories, newCategory])
     setNewCategory("")
+  }
+
+  // Функция для показа модального окна с существующими вопросами
+  const handleShowExistingQuestions = () => {
+    if (existingQuestions.length === 0) {
+      fetchExistingQuestions()
+    }
+    setShowExistingQuestions(true)
+    setSelectedExistingQuestions([])
+    setSearchTerm("")
+  }
+
+  // Функция для закрытия модального окна
+  const handleCloseExistingQuestions = () => {
+    setShowExistingQuestions(false)
+    setSelectedExistingQuestions([])
+    setSearchTerm("")
+  }
+
+  // Функция для выбора/отмены выбора существующего вопроса
+  const toggleExistingQuestion = question => {
+    // Теперь выбираем только один вопрос
+    if (
+      selectedExistingQuestions.length > 0 &&
+      selectedExistingQuestions[0].id === question.id
+    ) {
+      setSelectedExistingQuestions([])
+    } else {
+      setSelectedExistingQuestions([question])
+    }
+  }
+
+  // Функция для заполнения формы выбранным вопросом
+  const fillFormWithSelectedQuestion = () => {
+    if (selectedExistingQuestions.length === 0) return
+
+    const question = selectedExistingQuestions[0]
+
+    // Дополнительная проверка на дублирование
+    const isDuplicate = surveyData.questions.some(
+      q => q.text.toLowerCase().trim() === question.text.toLowerCase().trim()
+    )
+
+    if (isDuplicate) {
+      alert("Этот вопрос уже добавлен в опросник!")
+      return
+    }
+
+    // Преобразуем формат из базы вопросов в формат формы
+    let type = question.type
+    if (type === "SINGLE_CHOICE") type = "single_choice"
+    else if (type === "MULTIPLE_CHOICE") type = "multiple_choice"
+    else if (type === "TEXT") type = "text"
+    else if (type === "RATING") type = "rating"
+    else type = type.toLowerCase()
+
+    // Заполняем форму нового вопроса
+    setNewQuestion({
+      text: question.text,
+      type: type,
+      required: question.required || false,
+      category: question.category || "",
+      options:
+        type === "text" || type === "rating"
+          ? [""]
+          : question.options && question.options.length > 0
+          ? question.options
+          : [""],
+    })
+
+    handleCloseExistingQuestions()
+
+    // Показываем уведомление
+    alert(
+      "Вопрос загружен в форму. Вы можете отредактировать его перед добавлением."
+    )
+  }
+
+  // Функция для фильтрации вопросов по поисковому запросу
+  const getFilteredQuestions = () => {
+    if (!searchTerm.trim()) return existingQuestions
+
+    return existingQuestions.filter(
+      question =>
+        question.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (question.category &&
+          question.category.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
   }
 
   const saveSurvey = async () => {
@@ -357,6 +655,13 @@ const DashboardPage = () => {
               : question.type === "rating"
               ? "RATING"
               : question.type.toUpperCase(),
+          // Очищаем options для TEXT и RATING вопросов
+          options:
+            question.type === "text" || question.type === "TEXT"
+              ? []
+              : question.type === "rating" || question.type === "RATING"
+              ? []
+              : question.options.filter(option => option.trim() !== ""),
         })),
       }
 
@@ -675,7 +980,7 @@ const DashboardPage = () => {
                                 onClick={() => handleEditSurvey(survey.id)}
                                 title="Редактировать"
                               >
-                                ✏️
+                                {icons.edit}
                               </button>
 
                               <button
@@ -683,7 +988,7 @@ const DashboardPage = () => {
                                 onClick={() => navigate(`/survey/${survey.id}`)}
                                 title="Предпросмотр"
                               >
-                                👁️
+                                {icons.preview}
                               </button>
 
                               {survey.status !== "активный" &&
@@ -698,7 +1003,7 @@ const DashboardPage = () => {
                                     }
                                     title="Активировать"
                                   >
-                                    ▶️
+                                    {icons.activate}
                                   </button>
                                 )}
 
@@ -714,7 +1019,7 @@ const DashboardPage = () => {
                                   }
                                   title="Завершить"
                                 >
-                                  ⏹️
+                                  {icons.stop}
                                 </button>
                               )}
 
@@ -723,7 +1028,7 @@ const DashboardPage = () => {
                                 onClick={() => handleDeleteSurvey(survey.id)}
                                 title="Удалить"
                               >
-                                🗑️
+                                {icons.delete}
                               </button>
                             </div>
                           </td>
@@ -820,7 +1125,7 @@ const DashboardPage = () => {
             <div className="form-section">
               <h3>Вопросы опросника</h3>
               <p className="info-text">
-                Первые три вопроса являются обязательными и присутствуют во всех
+                Первые восемь вопросов являются базовыми и присутствуют во всех
                 опросниках.
               </p>
 
@@ -828,7 +1133,7 @@ const DashboardPage = () => {
                 <div key={index} className="question-card">
                   <div className="question-header">
                     <h4>Вопрос {index + 1}</h4>
-                    {index >= 3 && (
+                    {index >= 8 && (
                       <button
                         type="button"
                         className="delete-button"
@@ -849,7 +1154,7 @@ const DashboardPage = () => {
                       value={question.text}
                       onChange={e => handleQuestionChange(e, index)}
                       placeholder="Введите текст вопроса"
-                      disabled={index < 3} // Первые три вопроса нельзя изменять
+                      disabled={index < 8} // Первые восемь вопросов нельзя изменять
                     />
                   </div>
 
@@ -862,7 +1167,7 @@ const DashboardPage = () => {
                         className="form-select"
                         value={question.type}
                         onChange={e => handleQuestionChange(e, index)}
-                        disabled={index < 3}
+                        disabled={index < 8}
                       >
                         <option value="single_choice">
                           Один вариант ответа
@@ -883,7 +1188,7 @@ const DashboardPage = () => {
                         className="form-select"
                         value={question.category}
                         onChange={e => handleQuestionChange(e, index)}
-                        disabled={index < 3}
+                        disabled={index < 8}
                       >
                         {categories.map((category, i) => (
                           <option key={i} value={category}>
@@ -900,7 +1205,7 @@ const DashboardPage = () => {
                       id={`required-${index}`}
                       checked={question.required}
                       onChange={() => handleRequiredChange(index)}
-                      disabled={index < 3}
+                      disabled={index < 8}
                     />
                     <label htmlFor={`required-${index}`}>
                       Обязательный вопрос
@@ -925,9 +1230,9 @@ const DashboardPage = () => {
                               )
                             }
                             placeholder={`Вариант ${optionIndex + 1}`}
-                            disabled={index < 3}
+                            disabled={index < 8}
                           />
-                          {question.options.length > 1 && index >= 3 && (
+                          {question.options.length > 1 && index >= 8 && (
                             <button
                               type="button"
                               className="delete-option-button"
@@ -938,7 +1243,7 @@ const DashboardPage = () => {
                           )}
                         </div>
                       ))}
-                      {index >= 3 && (
+                      {index >= 8 && (
                         <button
                           type="button"
                           className="add-option-button"
@@ -953,7 +1258,16 @@ const DashboardPage = () => {
               ))}
 
               <div className="add-question-form">
-                <h4>Добавить новый вопрос</h4>
+                <div className="add-question-header">
+                  <h4>Создать новый вопрос</h4>
+                  <button
+                    type="button"
+                    className="secondary-button small-button"
+                    onClick={handleShowExistingQuestions}
+                  >
+                    Добавить из базы
+                  </button>
+                </div>
 
                 <div className="form-group">
                   <label htmlFor="newQuestionText">Текст вопроса:</label>
@@ -1064,6 +1378,7 @@ const DashboardPage = () => {
                   type="button"
                   className="add-button"
                   onClick={addNewQuestion}
+                  style={{ marginTop: "10px" }}
                 >
                   Добавить вопрос
                 </button>
@@ -1079,12 +1394,18 @@ const DashboardPage = () => {
                       value={newCategory}
                       onChange={e => setNewCategory(e.target.value)}
                       placeholder="Название новой категории"
+                      style={{
+                        // marginBottom: "10px",
+                        width: "100%",
+                        minWidth: "250px",
+                      }}
                     />
                   </div>
                   <button
                     type="button"
                     className="add-button"
                     onClick={addCategory}
+                    style={{ marginBottom: "10px" }}
                   >
                     Добавить категорию
                   </button>
@@ -1113,6 +1434,168 @@ const DashboardPage = () => {
           </div>
         )}
       </main>
+
+      {/* Модальное окно для выбора существующих вопросов */}
+      {showExistingQuestions && (
+        <div className="modal-overlay" onClick={handleCloseExistingQuestions}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Выбрать вопрос из базы</h3>
+              <button
+                className="modal-close-button"
+                onClick={handleCloseExistingQuestions}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {/* Поиск */}
+              <div className="search-section">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Поиск по тексту вопроса или категории..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              {/* Загрузка */}
+              {loadingQuestions && (
+                <div className="loading-indicator">Загрузка вопросов...</div>
+              )}
+
+              {/* Список вопросов */}
+              {!loadingQuestions && (
+                <div className="questions-list">
+                  {getFilteredQuestions().length === 0 ? (
+                    <div className="empty-state">
+                      <p>Вопросы не найдены</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="questions-summary">
+                        Найдено: {getFilteredQuestions().length}, доступно:{" "}
+                        {
+                          getFilteredQuestions().filter(
+                            q =>
+                              !surveyData.questions.some(
+                                sq =>
+                                  sq.text.toLowerCase().trim() ===
+                                  q.text.toLowerCase().trim()
+                              )
+                          ).length
+                        }
+                      </div>
+                      {getFilteredQuestions().map(question => {
+                        const isSelected = selectedExistingQuestions.some(
+                          q => q.id === question.id
+                        )
+                        const isDuplicate = surveyData.questions.some(
+                          q =>
+                            q.text.toLowerCase().trim() ===
+                            question.text.toLowerCase().trim()
+                        )
+
+                        return (
+                          <div
+                            key={question.id}
+                            className={`question-item ${
+                              isSelected ? "selected" : ""
+                            } ${isDuplicate ? "duplicate" : ""}`}
+                            onClick={() =>
+                              !isDuplicate && toggleExistingQuestion(question)
+                            }
+                          >
+                            <div className="question-checkbox">
+                              <input
+                                type="radio"
+                                checked={isSelected}
+                                onChange={() =>
+                                  !isDuplicate &&
+                                  toggleExistingQuestion(question)
+                                }
+                                name="selectedQuestion"
+                                disabled={isDuplicate}
+                              />
+                            </div>
+
+                            <div className="question-details">
+                              <div className="question-text">
+                                {question.text}
+                                {isDuplicate && (
+                                  <span className="duplicate-label">
+                                    (уже добавлен)
+                                  </span>
+                                )}
+                              </div>
+                              <div className="question-meta">
+                                <span className="question-type">
+                                  {question.type === "SINGLE_CHOICE"
+                                    ? "Один вариант"
+                                    : question.type === "MULTIPLE_CHOICE"
+                                    ? "Несколько вариантов"
+                                    : question.type === "TEXT"
+                                    ? "Текст"
+                                    : question.type === "RATING"
+                                    ? "Рейтинг"
+                                    : question.type}
+                                </span>
+                                {question.category && (
+                                  <span className="question-category">
+                                    • {question.category}
+                                  </span>
+                                )}
+                                {question.required && (
+                                  <span className="question-required">
+                                    • Обязательный
+                                  </span>
+                                )}
+                              </div>
+                              {question.options &&
+                                question.options.length > 0 && (
+                                  <div className="question-options-preview">
+                                    Варианты:{" "}
+                                    {question.options.slice(0, 3).join(", ")}
+                                    {question.options.length > 3 && "..."}
+                                  </div>
+                                )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <div className="selected-count">
+                {selectedExistingQuestions.length > 0
+                  ? "Выбран 1 вопрос"
+                  : "Выберите вопрос"}
+              </div>
+              <div className="modal-actions">
+                <button
+                  className="secondary-button"
+                  onClick={handleCloseExistingQuestions}
+                >
+                  Отмена
+                </button>
+                <button
+                  className="primary-button"
+                  onClick={fillFormWithSelectedQuestion}
+                  disabled={selectedExistingQuestions.length === 0}
+                >
+                  Добавить выбранный вопрос
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

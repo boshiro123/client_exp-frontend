@@ -33,6 +33,11 @@ class SurveyService {
       return response.data
     } catch (error) {
       console.error("Ошибка при создании опросника:", error)
+      if (error.response) {
+        console.error("Ответ сервера:", error.response.data)
+        console.error("Статус ошибки:", error.response.status)
+        console.error("Заголовки ответа:", error.response.headers)
+      }
       throw error
     }
   }

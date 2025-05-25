@@ -15,6 +15,7 @@ const StatisticsPage = () => {
   const [error, setError] = useState("")
   const [responseDetails, setResponseDetails] = useState(null)
   const [user, setUser] = useState(null)
+  const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
     const currentUser = authService.getCurrentUser()
@@ -39,6 +40,22 @@ const StatisticsPage = () => {
       }
     }
   }, [surveys, location.search])
+
+  // Эффект для обработки фильтрации ответов
+  useEffect(() => {
+    if (responseDetails && searchTerm) {
+      const filteredResponses = getFilteredResponses()
+      // Если текущий выбранный ответ не попадает в отфильтрованный список
+      if (!filteredResponses.some(r => r.id === responseDetails.id)) {
+        // Выбираем первый доступный ответ или очищаем выбор
+        if (filteredResponses.length > 0) {
+          setResponseDetails(filteredResponses[0])
+        } else {
+          setResponseDetails(null)
+        }
+      }
+    }
+  }, [searchTerm, responseDetails, responses])
 
   const fetchSurveys = async () => {
     try {
@@ -88,6 +105,21 @@ const StatisticsPage = () => {
 
   const handleResponseSelect = response => {
     setResponseDetails(response)
+  }
+
+  // Функция для фильтрации ответов по имени респондента
+  const getFilteredResponses = () => {
+    if (!searchTerm.trim()) return responses
+
+    return responses.filter(response => {
+      const name = response.respondent?.name || ""
+      return name.toLowerCase().includes(searchTerm.toLowerCase())
+    })
+  }
+
+  // Функция для очистки поиска
+  const clearSearch = () => {
+    setSearchTerm("")
   }
 
   const formatDate = dateString => {
@@ -318,18 +350,22 @@ const StatisticsPage = () => {
                         responses.length && setResponseDetails(responses[0])
                       }
                     >
-                      Ответы клиентов ({responses.length})
+                      Ответы клиентов (
+                      {searchTerm
+                        ? getFilteredResponses().length
+                        : responses.length}
+                      )
                     </button>
                   </div>
 
                   {!responseDetails ? (
                     <div className="general-statistics">
                       <div className="stats-summary">
-                        <div className="stat-card">
+                        {/* <div className="stat-card">
                           <div className="stat-value">{responses.length}</div>
                           <div className="stat-label">Всего ответов</div>
-                        </div>
-                        <div className="stat-card">
+                        </div> */}
+                        {/* <div className="stat-card">
                           <div className="stat-value">
                             {formatDate(selectedSurvey.startDate) ||
                               "Не указано"}
@@ -341,11 +377,11 @@ const StatisticsPage = () => {
                             {formatDate(selectedSurvey.endDate) || "Не указано"}
                           </div>
                           <div className="stat-label">Дата окончания</div>
-                        </div>
+                        </div> */}
                       </div>
 
                       <div className="questions-statistics">
-                        <h4>Статистика по вопросам</h4>
+                        <h4>Результаты опроса</h4>
 
                         {Object.entries(getQuestionsByCategory()).map(
                           ([category, questions]) => (
@@ -394,6 +430,23 @@ const StatisticsPage = () => {
                     </div>
                   ) : (
                     <div className="response-details">
+                      {/* Поле поиска по имени */}
+                      <div className="search-section">
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Поиск по имени респондента..."
+                          value={searchTerm}
+                          onChange={e => setSearchTerm(e.target.value)}
+                        />
+                        {searchTerm && (
+                          <div className="search-results-info">
+                            Найдено: {getFilteredResponses().length} из{" "}
+                            {responses.length} ответов
+                          </div>
+                        )}
+                      </div>
+
                       <div className="response-nav">
                         <select
                           className="response-selector"
@@ -405,7 +458,7 @@ const StatisticsPage = () => {
                             if (selected) setResponseDetails(selected)
                           }}
                         >
-                          {responses.map((response, index) => (
+                          {getFilteredResponses().map((response, index) => (
                             <option key={response.id} value={response.id}>
                               Ответ {index + 1} -{" "}
                               {response.respondent?.name || "Аноним"} (
@@ -417,12 +470,19 @@ const StatisticsPage = () => {
                         <div className="response-navigation">
                           <button
                             className="nav-button"
-                            disabled={responses.indexOf(responseDetails) === 0}
+                            disabled={
+                              getFilteredResponses().indexOf(
+                                responseDetails
+                              ) === 0
+                            }
                             onClick={() => {
+                              const filteredResponses = getFilteredResponses()
                               const currentIndex =
-                                responses.indexOf(responseDetails)
+                                filteredResponses.indexOf(responseDetails)
                               if (currentIndex > 0) {
-                                setResponseDetails(responses[currentIndex - 1])
+                                setResponseDetails(
+                                  filteredResponses[currentIndex - 1]
+                                )
                               }
                             }}
                           >
@@ -431,14 +491,19 @@ const StatisticsPage = () => {
                           <button
                             className="nav-button"
                             disabled={
-                              responses.indexOf(responseDetails) ===
-                              responses.length - 1
+                              getFilteredResponses().indexOf(
+                                responseDetails
+                              ) ===
+                              getFilteredResponses().length - 1
                             }
                             onClick={() => {
+                              const filteredResponses = getFilteredResponses()
                               const currentIndex =
-                                responses.indexOf(responseDetails)
-                              if (currentIndex < responses.length - 1) {
-                                setResponseDetails(responses[currentIndex + 1])
+                                filteredResponses.indexOf(responseDetails)
+                              if (currentIndex < filteredResponses.length - 1) {
+                                setResponseDetails(
+                                  filteredResponses[currentIndex + 1]
+                                )
                               }
                             }}
                           >

@@ -66,6 +66,14 @@ const SurveysListPage = () => {
         <p className="surveys-list-description">
           Выберите опросник, чтобы принять участие
         </p>
+        <div className="surveys-list-header-actions">
+          <button
+            className="secondary-button"
+            onClick={() => navigate("/login")}
+          >
+            Вернуться в систему
+          </button>
+        </div>
       </header>
 
       <main className="surveys-list-content">
@@ -104,12 +112,6 @@ const SurveysListPage = () => {
           </div>
         )}
       </main>
-
-      <div className="surveys-list-actions">
-        <button className="secondary-button" onClick={() => navigate("/login")}>
-          Войти в систему
-        </button>
-      </div>
     </div>
   )
 }

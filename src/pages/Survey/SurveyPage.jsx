@@ -290,6 +290,7 @@ const SurveyPage = () => {
               onChange={e => handleAnswerChange(question.id, e.target.value)}
               placeholder="Введите ваш ответ здесь..."
               rows={5}
+              style={{ marginRight: "40px" }}
             />
           </div>
         )
@@ -297,17 +298,19 @@ const SurveyPage = () => {
       case "RATING":
         return (
           <div className="rating-container">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(rating => (
-              <button
-                key={rating}
-                className={`rating-button ${
-                  answers[question.id] === rating ? "selected" : ""
-                }`}
-                onClick={() => handleAnswerChange(question.id, rating)}
-              >
-                {rating}
-              </button>
-            ))}
+            <div className="rating-buttons">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(rating => (
+                <button
+                  key={rating}
+                  className={`rating-button ${
+                    answers[question.id] === rating ? "selected" : ""
+                  }`}
+                  onClick={() => handleAnswerChange(question.id, rating)}
+                >
+                  {rating}
+                </button>
+              ))}
+            </div>
             <div className="rating-labels">
               <span>Очень плохо</span>
               <span>Отлично</span>

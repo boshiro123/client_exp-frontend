@@ -401,7 +401,6 @@ const ClientSegmentsPage = () => {
                   <th>Телефон</th>
                   <th>Возраст</th>
                   <th>Пол</th>
-                  <th>Профессия</th>
                   <th>Регион</th>
                   <th>Дата регистрации</th>
                 </tr>
@@ -430,11 +429,7 @@ const ClientSegmentsPage = () => {
                           client.genderFromAnswer || client.gender
                         )}
                       </td>
-                      <td>
-                        {client.professionFromAnswer ||
-                          client.profession ||
-                          "—"}
-                      </td>
+
                       <td>{client.region || "—"}</td>
                       <td>{formatDate(client.clientSince)}</td>
                     </tr>

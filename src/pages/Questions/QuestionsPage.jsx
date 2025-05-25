@@ -10,6 +10,7 @@ const QuestionsPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
+  const [searchTerm, setSearchTerm] = useState("")
 
   // Состояние для модального окна добавления/редактирования вопроса
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -275,18 +276,60 @@ const QuestionsPage = () => {
     return types[type] || type
   }
 
+  // Функция для фильтрации вопросов по поисковому запросу
+  const getFilteredQuestions = () => {
+    if (!searchTerm.trim()) return questions
+
+    return questions.filter(question => {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        question.text.toLowerCase().includes(searchLower) ||
+        (question.category &&
+          question.category.toLowerCase().includes(searchLower)) ||
+        getQuestionTypeLabel(question.type).toLowerCase().includes(searchLower)
+      )
+    })
+  }
+
   return (
     <div className="dashboard-container">
       <Sidebar user={currentUser} />
       <div className="dashboard-content">
         <div className="questions-header">
           <h1>База вопросов</h1>
-          <button className="btn-add-question" onClick={openAddModal}>
-            Добавить вопрос
-          </button>
+          <div className="header-actions">
+            <div className="search-container">
+              <input
+                type="text"
+                placeholder="Поиск по тексту, категории или типу..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              {searchTerm && (
+                <button
+                  className="clear-search"
+                  onClick={() => setSearchTerm("")}
+                  title="Очистить поиск"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <button className="btn-add-question" onClick={openAddModal}>
+              Добавить вопрос
+            </button>
+          </div>
         </div>
 
         {error && <div className="error-message">{error}</div>}
+
+        {searchTerm && (
+          <div className="search-results-info">
+            Найдено: {getFilteredQuestions().length} из {questions.length}{" "}
+            вопросов
+          </div>
+        )}
 
         {loading ? (
           <div className="loading-spinner">Загрузка...</div>
@@ -311,8 +354,16 @@ const QuestionsPage = () => {
                       Вопросы не найдены
                     </td>
                   </tr>
+                ) : getFilteredQuestions().length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="no-data">
+                      {searchTerm
+                        ? `По запросу "${searchTerm}" ничего не найдено`
+                        : "Вопросы не найдены"}
+                    </td>
+                  </tr>
                 ) : (
-                  questions.map((question, index) => (
+                  getFilteredQuestions().map((question, index) => (
                     <tr key={question.id || index}>
                       <td>{question.orderNumber || index + 1}</td>
                       <td>{question.text}</td>

@@ -261,10 +261,22 @@
   border: 1px solid #e0e0e0;
 }
 
-.add-question-form h4 {
-  margin-top: 0;
+.add-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
+}
+
+.add-question-header h4 {
+  margin: 0;
   color: #333;
+}
+
+.small-button {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 4px;
 }
 
 .add-button {
@@ -275,7 +287,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  margin-top: 10px;
+  /* margin-top: 10px; */
   transition: background-color 0.3s;
 }
 
@@ -740,7 +752,7 @@
 }
 
 .text-answers {
-  margin-top: 15px;
+  margin-top: 1px;
 }
 
 .text-answers h4 {
@@ -929,6 +941,7 @@
 
 .text-answer {
   color: #333;
+  margin-right: 20px;
   white-space: pre-wrap;
 }
 
@@ -1073,6 +1086,10 @@
   border-radius: 8px;
   padding: 25px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* Устанавливаем фиксированную минимальную высоту для обеих секций */
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
 }
 
 .distribution-section h3 {
@@ -1087,6 +1104,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  flex: 1; /* Заполняем оставшееся пространство */
 }
 
 .distribution-form .form-group {
@@ -1109,21 +1127,30 @@
 
 .distribution-form textarea.form-control {
   resize: vertical;
-  min-height: 100px;
+  min-height: 120px; /* Увеличиваем высоту текстового поля */
+  flex: 1; /* Позволяем textarea занимать оставшееся место */
 }
 
 .distribution-form select.form-control {
   height: 42px;
 }
 
+/* Кнопка всегда внизу формы */
+.distribution-form .primary-button {
+  margin-top: auto; /* Отталкиваем кнопку вниз */
+  align-self: flex-start; /* Не растягиваем кнопку на всю ширину */
+}
+
 @media screen and (min-width: 1024px) {
   .distribution-container {
     flex-direction: row;
-    align-items: flex-start;
+    align-items: stretch; /* Растягиваем элементы по высоте */
   }
 
   .distribution-section {
-    flex: 1;
+    flex: 1; /* Обе секции занимают равную ширину */
+    /* Устанавливаем одинаковую высоту для обеих секций на десктопе */
+    min-height: 350px;
   }
 }
 
@@ -1243,5 +1270,247 @@
 
   .clients-list {
     overflow-x: auto;
+  }
+}
+
+/* Модальное окно */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-close-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.modal-close-button:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.modal-body {
+  padding: 20px 24px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.search-section {
+  margin-bottom: 20px;
+}
+
+.search-section input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.search-section input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-results-info {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+  padding: 6px 12px;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+}
+
+.questions-summary {
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Список вопросов */
+.questions-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.question-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.question-item:last-child {
+  border-bottom: none;
+}
+
+.question-item:hover:not(.duplicate) {
+  background-color: #f9fafb;
+}
+
+.question-item.selected {
+  background-color: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.question-item.duplicate {
+  background-color: #fef2f2;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.question-checkbox {
+  margin-right: 12px;
+  margin-top: 2px;
+}
+
+.question-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.question-details {
+  flex: 1;
+}
+
+.question-text {
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.duplicate-label {
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+.question-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.question-type {
+  background-color: #e5e7eb;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.question-category {
+  color: #059669;
+}
+
+.question-required {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.question-options-preview {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Подвал модального окна */
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selected-count {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 16px;
+  }
+
+  .question-item {
+    padding: 12px;
+  }
+
+  .add-question-buttons {
+    flex-direction: column;
+    align-items: center;
   }
 }
