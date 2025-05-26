@@ -18,6 +18,7 @@ import AdminPage from "./pages/admin/AdminPage"
 import QuestionsPage from "./pages/Questions/QuestionsPage"
 import ProtectedRoute from "./components/common/ProtectedRoute"
 import IssuesPage from "./pages/Issues/IssuesPage"
+import ProblemAreasPage from "./pages/ProblemAreas/ProblemAreasPage"
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
             <Route path="/distribution" element={<DistributionPage />} />
             <Route path="/questions" element={<QuestionsPage />} />
             <Route path="/issues" element={<IssuesPage />} />
+            <Route path="/problem-areas" element={<ProblemAreasPage />} />
           </Route>
 
           {/* Маршруты только для администраторов */}

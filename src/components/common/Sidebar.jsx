@@ -235,6 +235,16 @@ const Sidebar = ({ user }) => {
           to="/issues"
           className={`sidebar-nav-item ${isActive("/issues") ? "active" : ""}`}
         >
+          <span className="sidebar-nav-icon">{icons.statistics}</span>
+          <span className="sidebar-nav-text">Статистика</span>
+        </NavLink>
+
+        <NavLink
+          to="/problem-areas"
+          className={`sidebar-nav-item ${
+            isActive("/problem-areas") ? "active" : ""
+          }`}
+        >
           <span className="sidebar-nav-icon">{icons.issues}</span>
           <span className="sidebar-nav-text">Проблемные места</span>
         </NavLink>
